@@ -117,6 +117,10 @@ const deleteLetter = () => {
 const checkRow = () => {
     const guess = guessRows[currentRow].join('')
     if (currentTile > 4){
+        if (!dictArray.includes(guess)){
+            showMessage('Nie ma takiego słowa')
+            return
+        }
         flipTile()
         if (wordle == guess){
             showMessage('Wygrałeś')
