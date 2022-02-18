@@ -2,8 +2,6 @@ const tileDisplay = document.querySelector('.tile-container')
 const keyboard = document.querySelector('.key-container')
 const messageDisplay = document.querySelector('.message-container')
 
-
-//const wordle = 'SUPER'
 const keys = [
     'Ą',
     'Ć',
@@ -65,11 +63,33 @@ guessRows.forEach((guessRow, guessRowIndex) => {
         const tileElement = document.createElement('div')
         tileElement.setAttribute('id', 'guessRow-'+ guessRowIndex + '-tile-' + guessIndex)
         tileElement.classList.add('tile')
+        tileElement.addEventListener('click', () => addColorToTile(guessRowIndex, guessIndex))
         rowElement.append(tileElement)
     })
 
     tileDisplay.append(rowElement)
 })
+
+const addColorToTile = (guessRowIndex, guessIndex) => {
+    console.log(guessRowIndex, guessIndex)
+    const tile = document.getElementById('guessRow-'+ guessRowIndex + '-tile-' + guessIndex)
+    if (tile.className === 'tile') {
+        tile.classList.add('grey-overlay')
+        return
+    }
+    if (tile.className === 'tile grey-overlay') {
+        tile.className = 'tile yellow-overlay'
+        return
+    }
+    if (tile.className === 'tile yellow-overlay') {
+        tile.className = 'tile green-overlay'
+        return
+    }
+    if (tile.className === 'tile green-overlay') {
+        tile.className = 'tile grey-overlay'
+        return
+    }
+}
 
 keys.forEach(key => {
     const buttonElement = document.createElement('button')
@@ -80,7 +100,6 @@ keys.forEach(key => {
 })
 
 const handleClick = (key) => {
-    //console.log('clicked', key)
     if (key === '«'){
         deleteLetter()
         return
@@ -99,9 +118,7 @@ const addLetter = (letter) => {
         guessRows[currentRow][currentTile] = letter
         tile.setAttribute('data', letter)
         currentTile++
-        //console.log(guessRows)
     }
-    
 }
 
 const deleteLetter = () => {
@@ -121,65 +138,64 @@ const checkRow = () => {
             showMessage('Nie ma takiego słowa')
             return
         }
-        flipTile()
-        if (wordle == guess){
-            showMessage('Wygrałeś')
-            isGameOver = true
-            return
-        } else {
-            if (currentRow >= 5) {
-                isGameOver = true
-                showMessage('Pudło')
-                return
-            }
-            if (currentRow < 5){
-                currentRow++
-                currentTile = 0
-            }
+        searchDict()
+        if (currentRow < 5){
+            currentRow++
+            currentTile = 0
         }
+        
+        showMessage(dict.join(' '))
     }
 }
 
-const showMessage = (message) => {
-    const messageElement = document.createElement('p')
-    messageElement.textContent = message
-    messageDisplay.append(messageElement)
-    setTimeout(() => messageDisplay.removeChild(messageElement), 2000)
-}
-
-const addColorToKey = (keyLetter, color) => {
-    const key = document.getElementById(keyLetter)
-    key.classList.add(color)
-}
-
-const flipTile = () => {
+const searchDict = () => {
     const rowTiles = document.querySelector('#guessRow-' + currentRow).childNodes
-    let checkWordle = wordle
     const guess = []
 
     rowTiles.forEach(tile => {
-        guess.push({ letter: tile.getAttribute('data'), color: 'grey-overlay'})
+        guess.push({ letter: tile.getAttribute('data'), color: tile.getAttribute('class')})
     })
+    console.log(guess)
 
     guess.forEach((guess, index) => {
-        if (guess.letter == wordle[index]) {
-            guess.color = 'green-overlay'
-            checkWordle = checkWordle.replace(guess.letter, '')
+        let tempDict = []
+        if (guess.color === 'tile green-overlay') {
+            dict.forEach(word => {
+                if (guess.letter == word[index]){
+                    tempDict.push(word)
+                }
+            })
+        dict = tempDict
+        return    
+        }
+        if (guess.color === 'tile yellow-overlay'){
+            dict.forEach(word => {
+                if (guess.letter != word[index] && word.includes(guess.letter)){
+                    tempDict.push(word)
+                }
+            })
+        dict = tempDict
+        return    
+        }
+        if (guess.color === 'tile grey-overlay'){
+            dict.forEach(word => {
+                if (!word.includes(guess.letter)){
+                    tempDict.push(word)
+                }
+            })
+        dict = tempDict
+        return    
         }
     })
-
-    guess.forEach(guess => {
-        if (checkWordle.includes(guess.letter)){
-            guess.color = 'yellow-overlay'
-            checkWordle = checkWordle.replace(guess.letter, '')
-        }
-    })
-
-    rowTiles.forEach((tile, index) => {
-        tile.classList.add(guess[index].color)
-        addColorToKey(guess[index].letter, guess[index].color)
-    })
+    console.log(dict) 
 }
+
+const showMessage = (message) => {
+    const messageElement = document.querySelector('p')
+    
+    messageElement.textContent = message
+}
+
 
 let dictionary = `ABAJA
 ABAKA
@@ -6891,5 +6907,6 @@ ZŻYTY
 ŻYWOT
 ŻYWOT
 ŻYZNY`
+
 const dictArray = dictionary.split('\n')
-const wordle = dictArray[Math.floor(Math.random()*dictArray.length)];
+let dict = dictArray

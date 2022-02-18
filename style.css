@@ -26,12 +26,14 @@ body {
 .tile-container {
     width: 330px;
     margin-bottom: 30px;
+    background-color: black;
 }
 
 .key-container {
     width: 510px;
     display: flex;
     flex-wrap: wrap;
+    background-color: black;
 }
 
 .key-container button {
@@ -69,7 +71,6 @@ body {
 }
 
 .message-container {
-    height: 50px;
 }
 
 .message-container p {
